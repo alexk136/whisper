@@ -1,0 +1,3 @@
+"""
+Whisper Voice Auth microservice.
+"""
