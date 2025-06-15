@@ -9,6 +9,7 @@ Whisper - это микросервис, который обеспечивает
 - Обработка команд на основе авторизации
 - Интеграция с сервисами языковых моделей (LLM)
 - Поддержка различных аудиоформатов
+- Гибридная система распознавания речи с автоматическим переключением между локальной и внешней обработкой
 
 ## Рабочий процесс
 1. **Запись голосовых образцов**: Пользователь записывает образцы своего голоса
@@ -74,7 +75,19 @@ curl -X POST \
   -F "audio_file=@./command.wav"
 ```
 
-#### Ответ API
+#### Гибридное распознавание речи
+```bash
+curl -X POST \
+  http://localhost:8000/api/v1/hybrid/stt \
+  -H "X-API-Key: your-api-key" \
+  -F "audio_file=@./command.wav" \
+  -F "verify_speaker=false" \
+  -F "use_semantics=true" \
+  -F "semantic_threshold=0.8" \
+  -F "return_debug=true"
+```
+
+#### Ответ API (стандартный)
 ```json
 {
   "status": "AUTHORIZED",
@@ -84,6 +97,22 @@ curl -X POST \
     "speaker_match": 0.97,
     "duration": 7.5,
     "language": "ru"
+  }
+}
+```
+
+#### Ответ API (гибридный)
+```json
+{
+  "source": "local",
+  "text": "включи свет в спальне",
+  "metadata": {
+    "confidence": 0.93,
+    "speaker_match": 0.97,
+    "duration": 7.5,
+    "language": "ru",
+    "fallback_used": false,
+    "semantic_diff": null
   }
 }
 ```

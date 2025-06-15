@@ -22,6 +22,9 @@ torchaudio>=2.1.0  # Audio processing for PyTorch
 openai-whisper>=20231117
 numba>=0.58.1  # Required for Whisper
 
+# Hybrid STT
+sentence-transformers>=0.12.2  # For semantic similarity
+
 # Security
 python-jose>=3.3.0  # For JWT
 cryptography>=41.0.4  # For encryption
