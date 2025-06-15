@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app/app
+      - ./storage:/app/storage
+      - ./config.yaml:/app/config.yaml
+    environment:
+      - WHISPER_API_KEY=your-secret-api-key-here
+      - WHISPER_ENCRYPTION_KEY=your-encryption-key-here-32-bytes-long
+      - WHISPER_LLM_API_URL=http://your-llm-service/api/v1/process
+      - WHISPER_LLM_API_KEY=your-llm-api-key
+      - PORT=8000
+      - HOST=0.0.0.0
+      - CONFIG_PATH=/app/config.yaml
+    restart: unless-stopped
+    # Uncomment to use GPU
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

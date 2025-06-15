@@ -1,0 +1,29 @@
+# Whisper Voice Auth Configuration
+
+# General settings
+development_mode: true
+skip_api_validation: false
+
+# API settings
+api:
+  keys:
+    - "your-secret-api-key-here"  # Change in production
+
+# CORS settings
+cors:
+  origins:
+    - "*"  # Restrict in production
+
+# Authentication settings
+auth:
+  speaker_verification_threshold: 0.75  # Minimum similarity score for verification
+
+# Transcription settings
+transcription:
+  whisper_model: "base"  # Options: tiny, base, small, medium, large
+  language: null  # null for auto-detection, or language code like "en", "ru"
+
+# Language Model integration
+llm:
+  api_url: ""  # Set this to your LLM API endpoint
+  timeout: 30  # Timeout in seconds

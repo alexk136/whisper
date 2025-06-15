@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./storage:/app/storage
+      - ./config.yaml:/app/config.yaml
+    environment:
+      - WHISPER_API_KEY=${WHISPER_API_KEY}
+      - WHISPER_ENCRYPTION_KEY=${WHISPER_ENCRYPTION_KEY}
+      - WHISPER_LLM_API_URL=${WHISPER_LLM_API_URL}
+      - WHISPER_LLM_API_KEY=${WHISPER_LLM_API_KEY}
+      - PORT=8000
+      - HOST=0.0.0.0
+      - CONFIG_PATH=/app/config.yaml
+      - WHISPER_DEVELOPMENT_MODE=false
+    restart: always
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
