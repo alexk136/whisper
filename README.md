@@ -62,7 +62,7 @@ python app/main.py
 ./record_samples.py --samples 3 --duration 10
 
 # Регистрация голосового отпечатка
-./test_client.py register samples/sample_1.wav samples/sample_2.wav samples/sample_3.wav
+./cli_tests/test_client.py register samples/sample_1.wav samples/sample_2.wav samples/sample_3.wav
 ```
 
 ### Использование API
@@ -128,6 +128,8 @@ curl -X POST \
 - Примеры использования различных скриптов
 
 Для информации об интеграции микросервиса с другими проектами см. [руководство по интеграции](docs/INTEGRATION_GUIDE.md).
+
+Для ручного тестирования компонентов используйте [CLI-утилиты](cli_tests/README.md).
 
 ## Требования
 - Python 3.12+
