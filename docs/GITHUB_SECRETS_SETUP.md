@@ -24,7 +24,7 @@ OPENAI_API_KEY=sk-your-openai-api-key-here
 # OPTIONAL SECRETS
 # ===============
 
-# Project path on server (default: /home/user/whisper)
+# Project path on server (default: /home/deploy/whisper)
 PROJECT_PATH=/opt/whisper-microservice
 
 # Docker registry credentials (if using private registry)
@@ -89,8 +89,8 @@ NEWRELIC_LICENSE_KEY=your-newrelic-license-key
 # su - deploy-user
 
 # Create project directory
-# mkdir -p /opt/whisper-microservice/{logs,storage,models,data}
-# cd /opt/whisper-microservice
+# mkdir -p /home/deploy/whisper/{logs,storage,models,data}
+# cd /home/deploy/whisper
 
 # Clone repository (first time)
 # git clone https://github.com/your-org/whisper-microservice.git .

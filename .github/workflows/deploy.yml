@@ -4,9 +4,6 @@ on:
   push:
     branches: [ main ]
 
-env:
-  PROJECT_PATH: /home/deploy/whisper
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -23,7 +20,7 @@ jobs:
             echo "🚀 Starting deployment to Whisper Voice Auth Service..."
             
             # Navigate to project directory
-            cd ${{ env.PROJECT_PATH }}
+            cd ${{ secrets.PROJECT_PATH || '/home/deploy/whisper' }}
             
             # Pull latest code
             echo "📥 Pulling latest code..."

@@ -73,8 +73,8 @@ CI_SSH_KEY=your-private-ssh-key
 OPENAI_API_KEY=sk-your-openai-api-key
 
 # Опциональные секреты
-SERVER_PORT=22                    # По умолчанию 22
-PROJECT_PATH=/home/user/whisper   # По умолчанию /home/user/whisper
+SERVER_PORT=22                      # По умолчанию 22
+PROJECT_PATH=/home/deploy/whisper   # По умолчанию /home/deploy/whisper
 
 # Дополнительные API ключи (если используются)
 TELEGRAM_BOT_TOKEN=your-telegram-bot-token
@@ -98,8 +98,8 @@ cat ~/.ssh/id_ed25519
 
 ```bash
 # На сервере создать структуру проекта
-mkdir -p /home/user/whisper/{logs,storage,data}
-cd /home/user/whisper
+mkdir -p /home/deploy/whisper/{logs,storage,data}
+cd /home/deploy/whisper
 
 # Клонировать репозиторий
 git clone https://github.com/your-org/whisper.git .
