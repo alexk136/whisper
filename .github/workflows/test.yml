@@ -1,11 +1,8 @@
-name: CI/CD Pipeline for Whisper Voice Auth Service
+name: CI/CD Test Pipeline for Whisper Voice Auth Service
 
 on:
   push:
     branches: [ main ]
-
-env:
-  PROJECT_PATH: /home/deploy/whisper
 
 jobs:
   deploy:
@@ -23,7 +20,7 @@ jobs:
             echo "🚀 Starting deployment to Whisper Voice Auth Service..."
             
             # Navigate to project directory
-            cd ${{ env.PROJECT_PATH }}
+            cd ${{ secrets.PROJECT_PATH || '/home/deploy/whisper' }}
             
             # Pull latest code
             echo "📥 Pulling latest code..."

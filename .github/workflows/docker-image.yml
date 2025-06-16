@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Whisper Voice Auth Service
+name: CI/CD Docker Pipeline for Whisper Voice Auth Service
 
 on:
   push:
@@ -9,7 +9,6 @@ on:
 env:
   IMAGE_NAME: whisper-voice-auth
   REGISTRY: ghcr.io
-  PROJECT_PATH: /home/deploy/whisper
 
 jobs:
   test:
