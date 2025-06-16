@@ -24,6 +24,19 @@ Whisper - это микросервис, который обеспечивает
 
 ### Установка
 
+#### Быстрый старт (рекомендуется)
+```bash
+# Клонировать репозиторий
+git clone https://github.com/username/whisper.git
+cd whisper
+
+# Быстрый старт для разработчиков
+make quick-start
+
+# Или посмотреть все доступные команды
+make help
+```
+
 #### С использованием Docker
 ```bash
 # Клонировать репозиторий
@@ -32,6 +45,8 @@ cd whisper
 
 # Запустить с Docker Compose
 docker-compose up -d
+# или
+make dev
 ```
 
 #### Ручная установка
@@ -42,6 +57,8 @@ cd whisper
 
 # Запустить скрипт установки
 ./setup.sh
+# или
+make setup
 
 # Или вручную:
 # Создать виртуальное окружение
@@ -53,6 +70,42 @@ pip install -r requirements.txt
 
 # Запустить приложение
 python app/main.py
+```
+
+### Основные команды разработки
+
+Проект использует Makefile для упрощения основных задач разработки:
+
+```bash
+# Показать все доступные команды
+make help
+
+# Быстрый старт для новых разработчиков
+make quick-start
+
+# Разработка
+make dev              # Запустить среду разработки
+make build            # Собрать Docker образы
+make logs             # Показать логи сервисов
+make status           # Показать статус сервисов
+
+# Тестирование
+make test             # Запустить все тесты
+make test-unit        # Только unit тесты
+make test-api         # Только API тесты
+make test-coverage    # Тесты с покрытием кода
+
+# Качество кода
+make lint             # Проверить код линтерами
+make format           # Отформатировать код
+
+# Деплой
+make deploy           # Деплой в production
+make deploy-staging   # Деплой в staging
+
+# Очистка
+make clean            # Очистить контейнеры
+make clean-all        # Полная очистка
 ```
 
 ### Настройка голосовой авторизации

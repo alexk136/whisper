@@ -1,15 +1,24 @@
 version: '3.8'
 
+networks:
+  whisper-net:
+    external: false
+
 services:
-  whisper:
+  whisper-api:
     build:
       context: .
       dockerfile: Dockerfile
+    image: whisper-voice-auth:latest
+    container_name: whisper-api-prod
     ports:
       - "8000:8000"
     volumes:
       - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./models:/app/models
       - ./config.yaml:/app/config.yaml
+      - ./data:/app/data
     environment:
       - WHISPER_API_KEY=${WHISPER_API_KEY}
       - WHISPER_ENCRYPTION_KEY=${WHISPER_ENCRYPTION_KEY}
@@ -19,9 +28,15 @@ services:
       - HOST=0.0.0.0
       - CONFIG_PATH=/app/config.yaml
       - WHISPER_DEVELOPMENT_MODE=false
-    restart: always
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - whisper-net
     deploy:
       resources:
+        limits:
+          memory: 4G
         reservations:
           devices:
             - driver: nvidia
@@ -31,10 +46,37 @@ services:
       driver: "json-file"
       options:
         max-size: "100m"
-        max-file: "3"
+        max-file: "5"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 40s
+      retries: 5
+      start_period: 60s
+    labels:
+      - "com.whisper.service=api"
+      - "com.whisper.environment=production"
+    
+  # Опциональный сервис для мониторинга
+  whisper-monitoring:
+    image: prom/node-exporter:latest
+    container_name: whisper-monitoring-prod
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points'
+      - '^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)'
+    restart: unless-stopped
+    networks:
+      - whisper-net
+    profiles:
+      - monitoring
+    labels:
+      - "com.whisper.service=monitoring"
+      - "com.whisper.environment=production"

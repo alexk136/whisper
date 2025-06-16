@@ -1,16 +1,25 @@
 version: '3.8'
 
+networks:
+  whisper-dev:
+    external: false
+
 services:
-  whisper:
+  whisper-api:
     build:
       context: .
       dockerfile: Dockerfile
+    image: whisper-voice-auth:dev
+    container_name: whisper-api-dev
     ports:
       - "8000:8000"
     volumes:
       - ./app:/app/app
       - ./storage:/app/storage
+      - ./logs:/app/logs
+      - ./models:/app/models
       - ./config.yaml:/app/config.yaml
+      - ./data:/app/data
     environment:
       - WHISPER_API_KEY=your-secret-api-key-here
       - WHISPER_ENCRYPTION_KEY=your-encryption-key-here-32-bytes-long
@@ -19,7 +28,12 @@ services:
       - PORT=8000
       - HOST=0.0.0.0
       - CONFIG_PATH=/app/config.yaml
+      - WHISPER_DEVELOPMENT_MODE=true
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped
+    networks:
+      - whisper-dev
     # Uncomment to use GPU
     deploy:
       resources:
@@ -28,3 +42,17 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "com.whisper.service=api"
+      - "com.whisper.environment=development"
