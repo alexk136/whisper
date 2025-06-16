@@ -8,6 +8,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from app.api.routes import api_router
+from app.api.hybrid_routes import hybrid_router
 from app.utils.config import load_config
 
 # Set up logging
@@ -38,6 +39,7 @@ app.add_middleware(
 
 # Include API routes
 app.include_router(api_router, prefix="/api/v1")
+app.include_router(hybrid_router, prefix="/api/v1")
 
 # Health check endpoint
 @app.get("/health")

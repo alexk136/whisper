@@ -27,3 +27,14 @@ transcription:
 llm:
   api_url: ""  # Set this to your LLM API endpoint
   timeout: 30  # Timeout in seconds
+
+# Hybrid STT settings
+hybrid_stt:
+  whisper_url: "http://localhost:8000"  # URL of local Whisper service
+  remote_api_url: ""  # URL of remote STT API
+  min_confidence: 0.85  # Minimum confidence threshold
+  min_speaker_match: 0.90  # Minimum speaker match threshold
+  timeout_local: 5  # Timeout for local service in seconds
+  use_semantic_validation: false  # Whether to use semantic validation
+  semantic_model: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"  # Model for semantic comparison
+  semantic_threshold: 0.75  # Minimum semantic similarity to prefer local result

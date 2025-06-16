@@ -23,7 +23,7 @@ class VerificationResponse(BaseModel):
 class AudioMetadata(BaseModel):
     """Audio metadata schema."""
     confidence: float = Field(..., description="Confidence score of the transcription")
-    speaker_match: float = Field(..., description="Voice similarity score with the owner")
+    speaker_match: Optional[float] = Field(None, description="Voice similarity score with the owner")
     duration: Optional[float] = Field(None, description="Duration of the audio in seconds")
     language: Optional[str] = Field(None, description="Detected language of the speech")
     sample_rate: Optional[int] = Field(None, description="Sample rate of the processed audio")
@@ -42,3 +42,20 @@ class CommandResponse(BaseModel):
     response: str = Field(..., description="Response to the command")
     action_taken: Optional[str] = Field(None, description="Action taken in response to the command")
     details: Optional[Dict[str, Any]] = Field(None, description="Additional details about the command processing")
+
+
+class HybridSTTMetadata(BaseModel):
+    """Hybrid STT metadata schema."""
+    confidence: float = Field(..., description="Confidence score of the transcription")
+    speaker_match: Optional[float] = Field(None, description="Voice similarity score with the owner")
+    duration: float = Field(..., description="Duration of the audio in seconds")
+    language: str = Field(..., description="Detected language of the speech")
+    fallback_used: bool = Field(..., description="Whether the fallback to remote API was used")
+    semantic_diff: Optional[float] = Field(None, description="Semantic difference between local and remote results")
+
+
+class HybridSTTResponse(BaseModel):
+    """Hybrid STT response schema."""
+    source: str = Field(..., description="Source of the transcription: 'local' or 'remote'")
+    text: str = Field(..., description="Transcribed text from the audio")
+    metadata: HybridSTTMetadata = Field(..., description="Metadata about the STT process")
