@@ -87,11 +87,11 @@ def test_cli_argument_parsing():
             hybrid_stt.main()
             
             # Verify the arguments were parsed correctly and passed to process_audio
-            args, kwargs = mock_run.call_args[0][0].cr_frame.f_locals
-            assert args == "/path/to/audio.wav"
-            assert kwargs["verify_speaker"] == True
-            assert kwargs["use_semantics"] == True
-            assert kwargs["semantic_threshold"] == 0.8
+            call_args, call_kwargs = mock_run.call_args
+            assert call_args[0] == "/path/to/audio.wav"
+            assert call_kwargs["verify_speaker"] == True
+            assert call_kwargs["use_semantics"] == True
+            assert call_kwargs["semantic_threshold"] == 0.8
 
 
 def test_cli_environment_variables():
