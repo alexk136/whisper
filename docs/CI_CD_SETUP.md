@@ -2,7 +2,16 @@
 
 ## Обзор
 
-Проект настроен для автоматического развертывания с использованием GitHub Actions, SSH и docker-compose. Система обеспечивает нулевое время простоя и сохранение состояния контейнеров.
+Проект настроен для автоматического развертывания с использованием GitHub Actions, SSH и docker-compose. Система обеспечивает нулевое время простоя и сохранение состояния контейнеров. Поддерживает гибридную архитекту## Security Considerations
+
+1. **SSH Keys**: Используйте отдельные ключи для CI/CD (не ваши персональные ключи)
+2. **Secrets**: Никогда не храните секреты в коде (особенно OPENAI_API_KEY)
+3. **Server Access**: Ограничьте доступ только для CI/CD пользователя
+4. **Network**: Используйте VPN или firewall для доступа к серверу
+5. **Docker**: Регулярно обновляйте базовые образы
+6. **API Keys**: Регулярно ротируйте OpenAI API ключи
+7. **Monitoring**: Мониторьте использование API и потенциальные атаки
+8. **Audit**: Ведите логи всех deployment операцийenAI Whisper API как основным сервисом и локальным Whisper как fallback.
 
 ## Архитектура CI/CD
 
@@ -13,6 +22,7 @@
 │ git push main   │───▶│ 1. Run Tests     │───▶│ 1. Pull Code    │
 │                 │    │ 2. Build Check   │    │ 2. Pull Images  │
 │                 │    │ 3. SSH Deploy    │    │ 3. Restart      │
+│                 │    │ 4. Test Health   │    │ 4. Verify APIs  │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
@@ -31,10 +41,12 @@
 #### `.github/workflows/test.yml`
 - **Триггер**: Pull Request в `main`
 - **Задачи**:
-  - Запуск тестов
+  - Запуск тестов (включая мок-тестирование OpenAI интеграции)
   - Проверка форматирования кода
   - Сборка Docker образа
   - Проверка работоспособности образа
+  - Тестирование гибридной архитектуры
+  - Валидация конфигурации OpenAI
 
 ### 2. Server-side Script
 
@@ -52,14 +64,21 @@
 Необходимо настроить следующие секреты в GitHub репозитории:
 
 ```bash
-# Обязательные секреты
+# Обязательные секреты для развертывания
 SERVER_HOST=your-server-ip-or-domain
 SERVER_USER=your-ssh-username
 CI_SSH_KEY=your-private-ssh-key
 
+# Обязательные секреты для OpenAI интеграции
+OPENAI_API_KEY=sk-your-openai-api-key
+
 # Опциональные секреты
 SERVER_PORT=22                    # По умолчанию 22
 PROJECT_PATH=/home/user/whisper   # По умолчанию /home/user/whisper
+
+# Дополнительные API ключи (если используются)
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+SLACK_WEBHOOK_URL=your-slack-webhook-url
 ```
 
 ### 2. SSH Key Setup
@@ -87,10 +106,17 @@ git clone https://github.com/your-org/whisper.git .
 
 # Настроить переменные окружения
 cp .env.prod.sample .env
-# Отредактировать .env файл
+# Отредактировать .env файл, особенно:
+# OPENAI_API_KEY=sk-your-openai-api-key
+# PRIMARY_SERVICE=openai
+# FALLBACK_TO_LOCAL=true
 
 # Первый запуск
 docker-compose up -d
+
+# Проверить состояние сервисов
+docker-compose ps
+curl http://localhost:8000/health
 ```
 
 ### 4. Docker Compose Configuration
@@ -106,6 +132,10 @@ docker-compose up -d
 services:
   whisper-api:
     # ... другие настройки
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - PRIMARY_SERVICE=openai
+      - FALLBACK_TO_LOCAL=true
     volumes:
       - ./storage:/app/storage
       - ./logs:/app/logs
@@ -116,6 +146,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 60s  # Дополнительное время для загрузки моделей
 ```
 
 ## Workflow Process
@@ -145,16 +176,18 @@ git push origin main
 ```
 
 Автоматически запускается:
-1. **Tests**: Проверка всех тестов
+1. **Tests**: Проверка всех тестов (включая OpenAI интеграцию)
 2. **Deploy**: SSH подключение к серверу
 3. **Server Actions**:
    - Backup текущего состояния
    - Pull latest code
+   - Update environment variables (OPENAI_API_KEY)
    - Pull Docker images
    - Restart services with zero downtime
-   - Health check
+   - Health check (включая проверку OpenAI API статуса)
    - Cleanup old images
-4. **Notifications**: Уведомления о статусе
+4. **Validation**: Проверка доступности API эндпоинтов
+5. **Notifications**: Уведомления о статусе
 
 ## Troubleshooting
 
@@ -179,9 +212,15 @@ docker-compose ps
 # Просмотр логов
 docker-compose logs -f
 
+# Проверка переменных окружения
+docker-compose exec whisper-api env | grep OPENAI
+
 # Полная пересборка
 docker-compose down
 docker-compose up -d --build --force-recreate
+
+# Проверка health endpoint
+curl http://localhost:8000/health
 ```
 
 ### 3. Deployment Issues
@@ -198,6 +237,8 @@ docker-compose up -d --build --force-recreate
 ### 1. Health Checks
 - Встроенные health checks в Docker
 - Проверка доступности API эндпоинтов
+- Мониторинг статуса OpenAI API connectivity
+- Проверка fallback механизмов
 - Мониторинг логов приложения
 
 ### 2. Logs Management
@@ -207,6 +248,12 @@ ls -la logs/deployment-*.log
 
 # Просмотр логов приложения
 docker-compose logs -f --tail=100
+
+# Просмотр логов OpenAI API запросов
+docker-compose logs whisper-api | grep -i openai
+
+# Просмотр логов fallback активации
+docker-compose logs whisper-api | grep -i fallback
 ```
 
 ### 3. Notifications (Опционально)

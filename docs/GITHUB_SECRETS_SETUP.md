@@ -1,7 +1,7 @@
 # GitHub Secrets Configuration
 
 # This file contains examples of GitHub secrets that need to be configured
-# for the CI/CD pipeline to work properly.
+# for the CI/CD pipeline and OpenAI Whisper hybrid architecture to work properly.
 
 # REQUIRED SECRETS
 # ================
@@ -17,6 +17,9 @@ CI_SSH_KEY=|
   b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAlwAAAAdzc2gtcn
   ... (your actual private key content) ...
   -----END OPENSSH PRIVATE KEY-----
+
+# OpenAI API Integration (REQUIRED for hybrid architecture)
+OPENAI_API_KEY=sk-your-openai-api-key-here
 
 # OPTIONAL SECRETS
 # ===============
@@ -38,6 +41,13 @@ TELEGRAM_CHAT_ID=-1001234567890
 DATABASE_URL=postgresql://user:password@localhost:5432/whisper_prod
 REDIS_URL=redis://localhost:6379/0
 API_KEY=your-super-secret-api-key
+
+# Hybrid architecture configuration
+PRIMARY_SERVICE=openai  # "openai" or "local"
+FALLBACK_TO_LOCAL=true  # Enable fallback to local whisper
+OPENAI_MODEL=gpt-4o-transcribe  # OpenAI model to use
+OPENAI_TIMEOUT=30  # Timeout for OpenAI API calls
+CHUNK_SIZE_MB=20  # Chunk size for large audio files
 
 # Monitoring and alerting
 SENTRY_DSN=https://your-sentry-dsn@sentry.io/project-id
@@ -87,10 +97,16 @@ NEWRELIC_LICENSE_KEY=your-newrelic-license-key
 
 # Set up environment
 # cp .env.prod.sample .env
-# nano .env  # Edit configuration
+# nano .env  # Edit configuration, especially:
+# OPENAI_API_KEY=sk-your-openai-api-key
+# PRIMARY_SERVICE=openai
+# FALLBACK_TO_LOCAL=true
 
 # Create docker network (if needed)
 # docker network create whisper-net
+
+# Test OpenAI API connectivity
+# curl -H "Authorization: Bearer $OPENAI_API_KEY" https://api.openai.com/v1/models
 
 # SECURITY NOTES
 # ==============
@@ -98,10 +114,13 @@ NEWRELIC_LICENSE_KEY=your-newrelic-license-key
 # 1. Never commit this file to git with real values
 # 2. Use separate SSH keys for CI/CD (not your personal keys)
 # 3. Limit server access for CI/CD user
-# 4. Regularly rotate secrets
+# 4. Regularly rotate secrets (especially OpenAI API keys)
 # 5. Use least privilege principle
 # 6. Enable 2FA on GitHub account
-# 7. Monitor access logs
+# 7. Monitor access logs and API usage
+# 8. Keep OpenAI API keys secure and monitor usage quotas
+# 9. Use environment-specific API keys (dev/staging/prod)
+# 10. Set up billing alerts for OpenAI API usage
 
 # VALIDATION COMMANDS
 # ==================
@@ -112,4 +131,10 @@ NEWRELIC_LICENSE_KEY=your-newrelic-license-key
 #     echo "Server: ${{ secrets.SERVER_HOST }}"
 #     echo "User: ${{ secrets.SERVER_USER }}"
 #     echo "SSH key length: ${#CI_SSH_KEY}"
+#     echo "OpenAI key configured: ${{ secrets.OPENAI_API_KEY != '' }}"
 #     ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.CI_SSH_KEY }}") ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo 'SSH connection successful'"
+
+# Test OpenAI API from server:
+# curl -H "Authorization: Bearer $OPENAI_API_KEY" \
+#      -H "Content-Type: application/json" \
+#      https://api.openai.com/v1/models | jq '.data[] | select(.id | contains("whisper"))'
