@@ -19,7 +19,7 @@ torch>=2.1.0  # PyTorch for deep learning
 torchaudio>=2.1.0  # Audio processing for PyTorch
 
 # Speech recognition
-openai-whisper>=20231117
+whisper>=20231117
 numba>=0.58.1  # Required for Whisper
 
 # Hybrid STT
