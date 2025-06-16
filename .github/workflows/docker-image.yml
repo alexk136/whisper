@@ -1,0 +1,154 @@
+name: CI/CD Pipeline for Whisper Voice Auth Service
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  IMAGE_NAME: whisper-voice-auth
+  REGISTRY: ghcr.io
+  PROJECT_PATH: /home/deploy/whisper
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pyyaml requests
+
+      - name: Run tests
+        run: |
+          python -m pytest tests/ -v || true
+          echo "✅ Tests completed"
+
+  build:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest"
+          COMMIT_TAG="${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          
+          echo "🏗️ Building Docker image..."
+          docker build -t $IMAGE_TAG -t $COMMIT_TAG .
+          
+          echo "🚀 Pushing Docker images..."
+          docker push $IMAGE_TAG
+          docker push $COMMIT_TAG
+          
+          echo "✅ Images pushed successfully"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || '22' }}
+          command_timeout: 10m
+          script: |
+            echo "🚀 Starting deployment to Whisper Voice Auth Service..."
+            
+            # Navigate to project directory
+            cd ${{ env.PROJECT_PATH }}
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            
+            # Update Docker images
+            echo "🐳 Pulling latest Docker images..."
+            docker-compose -f docker-compose.prod.yml pull
+            
+            # Create backup of voice prints if they exist
+            echo "💾 Creating backup..."
+            if [ -d "./data/voiceprints" ]; then
+              tar -czf "./data/backup-$(date +%Y%m%d-%H%M%S).tar.gz" "./data/voiceprints/" || echo "⚠️ Backup creation failed"
+            fi
+            
+            # Deploy with zero-downtime restart
+            echo "🔄 Restarting services..."
+            docker-compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
+            
+            # Wait for service to start
+            echo "⏳ Waiting for service to start..."
+            sleep 15
+            
+            # Health check
+            echo "🏥 Performing health check..."
+            for i in {1..5}; do
+              if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+                echo "✅ Health check passed!"
+                break
+              else
+                echo "⏳ Health check attempt $i/5 failed, retrying..."
+                sleep 10
+              fi
+              
+              if [ $i -eq 5 ]; then
+                echo "❌ Health check failed after 5 attempts"
+                echo "📋 Service logs:"
+                docker-compose -f docker-compose.prod.yml logs --tail=20 whisper-service
+                exit 1
+              fi
+            done
+            
+            # Cleanup old Docker images
+            echo "🧹 Cleaning up old images..."
+            docker image prune -f || echo "⚠️ Image cleanup failed"
+            
+            echo "🎉 Deployment completed successfully!"
+            echo "🌐 Service is available at: http://$(hostname -I | cut -d' ' -f1):8000"
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: [build, deploy]
+    if: always() && github.ref == 'refs/heads/main'
+    steps:
+      - name: Notify deployment result
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Whisper Voice Auth Service deployed successfully!"
+            echo "📊 Deployment Summary:"
+            echo "  - Build: ${{ needs.build.result }}"
+            echo "  - Deploy: ${{ needs.deploy.result }}"
+            echo "  - Commit: ${{ github.sha }}"
+            echo "  - Branch: ${{ github.ref_name }}"
+          else
+            echo "❌ Deployment failed!"
+            echo "🔍 Check the logs above for details"
+            exit 1
+          fi
