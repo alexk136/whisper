@@ -6,6 +6,10 @@ python-multipart>=0.0.6  # For handling file uploads
 pyyaml>=6.0.1  # For configuration
 python-dotenv>=1.0.0  # For environment variables
 
+# OpenAI API (Primary STT)
+openai>=1.0.0  # OpenAI Whisper API client
+aiohttp>=3.8.0  # For async HTTP requests
+
 # Audio processing
 librosa>=0.10.1
 pydub>=0.25.1
@@ -18,8 +22,8 @@ speechbrain>=0.5.15
 torch>=2.1.0  # PyTorch for deep learning
 torchaudio>=2.1.0  # Audio processing for PyTorch
 
-# Speech recognition
-whisper>=20231117
+# Speech recognition (Fallback)
+whisper>=20231117  # Local Whisper as fallback
 numba>=0.58.1  # Required for Whisper
 
 # Hybrid STT

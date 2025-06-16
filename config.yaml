@@ -20,8 +20,21 @@ auth:
 
 # Transcription settings
 transcription:
+  # Primary: OpenAI Whisper API
+  primary_service: "openai"  # "openai" or "local"
+  fallback_to_local: true    # Use local whisper if OpenAI fails
+  
+  # Local Whisper (fallback)
   whisper_model: "base"  # Options: tiny, base, small, medium, large
   language: null  # null for auto-detection, or language code like "en", "ru"
+
+# OpenAI API settings
+openai:
+  api_key: ""  # Set via environment variable OPENAI_API_KEY
+  model: "gpt-4o-transcribe"  # Options: gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1
+  max_retries: 3
+  timeout: 30  # Timeout in seconds
+  chunk_size_mb: 20  # For large files, split into chunks (max 25MB for OpenAI)
 
 # Language Model integration
 llm:

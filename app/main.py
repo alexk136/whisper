@@ -44,8 +44,40 @@ app.include_router(hybrid_router, prefix="/api/v1")
 # Health check endpoint
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
-    return {"status": "ok"}
+    """Health check endpoint with system status."""
+    try:
+        from datetime import datetime
+        from app.hybrid.controller import get_hybrid_status
+        
+        return {
+            "status": "healthy",
+            "service": "whisper-voice-auth",
+            "timestamp": datetime.now().isoformat(),
+            "version": "1.0.0",
+            "components": {
+                "api": "ready",
+                "hybrid_stt": "ready",
+                "voice_auth": "ready"
+            },
+            "system_status": get_hybrid_status()
+        }
+    except Exception as e:
+        logger.error(f"Health check failed: {str(e)}")
+        raise HTTPException(
+            status_code=503,
+            detail=f"Service unhealthy: {str(e)}"
+        )
+
+@app.get("/")
+async def root():
+    """Root endpoint with service information."""
+    return {
+        "service": "Whisper Voice Authentication",
+        "description": "Voice Authentication and Analysis Microservice with Hybrid STT",
+        "version": "1.0.0",
+        "docs": "/docs",
+        "health": "/health"
+    }
 
 
 if __name__ == "__main__":
