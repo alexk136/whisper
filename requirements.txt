@@ -18,12 +18,12 @@ ffmpeg-python>=0.2.0
 
 # Voice authentication
 resemblyzer>=0.1.1.dev0  # For voice embedding and verification
-speechbrain>=0.5.15
+# speechbrain>=0.5.15  # Временно отключено из-за проблем сборки
 torch>=2.1.0  # PyTorch for deep learning
 torchaudio>=2.1.0  # Audio processing for PyTorch
 
 # Speech recognition (Fallback)
-whisper>=20231117  # Local Whisper as fallback
+openai-whisper>=20231117  # Local Whisper as fallback
 numba>=0.58.1  # Required for Whisper
 
 # Hybrid STT

@@ -25,12 +25,12 @@ async def process_audio(file_path, verify_speaker=False, use_semantics=False, se
     print(f"Processing audio file: {file_path}")
     print(f"Options: verify_speaker={verify_speaker}, use_semantics={use_semantics}")
     
-    # Process and normalize the audio file
-    processed_audio_path = await process_audio_file(file_path=Path(file_path))
+    # For CLI usage, just use the file path directly
+    audio_path = Path(file_path)
     
     # Process with hybrid approach
     result = await process_audio_hybrid(
-        audio_path=processed_audio_path,
+        audio_path=audio_path,
         verify_speaker_flag=verify_speaker,
         return_debug=True
     )
