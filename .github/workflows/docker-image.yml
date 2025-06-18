@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  IMAGE_NAME: whisper-voice-auth
+  IMAGE_NAME: whisper
   REGISTRY: ghcr.io
 
 jobs:

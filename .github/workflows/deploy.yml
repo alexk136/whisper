@@ -1,4 +1,4 @@
-name: CI/CD Deploy Pipeline for Whisper Voice Auth Service
+name: CI/CD Deploy  Pipeline for Whisper Voice Auth Service
 
 on:
   push:

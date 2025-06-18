@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: whisper-voice-auth:latest
+    image: whisper:latest
     container_name: whisper-api-prod
     ports:
       - "8000:8000"

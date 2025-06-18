@@ -51,7 +51,7 @@ async def health_check():
         
         return {
             "status": "healthy",
-            "service": "whisper-voice-auth",
+            "service": "whisper",
             "timestamp": datetime.now().isoformat(),
             "version": "1.0.0",
             "components": {

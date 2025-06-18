@@ -199,7 +199,7 @@ services:
       - whisper
   
   whisper:
-    image: whisper-voice-auth
+    image: whisper
     # Конфигурация из docker-compose.yml проекта Whisper
 ```
 
