@@ -660,7 +660,7 @@ WHISPER_LLM_API_KEY=your-llm-api-key
 
 ### Запуск с Docker Compose
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Сборка образа

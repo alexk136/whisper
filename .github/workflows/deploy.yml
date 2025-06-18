@@ -46,10 +46,10 @@ jobs:
             echo "📥 Pulling latest code..."
             git pull origin main
             
-            # Pull and restart with docker-compose
+            # Pull and restart with docker compose
             echo "🐳 Updating and restarting services..."
-            docker-compose -f docker-compose.prod.yml pull
-            docker-compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans --force-recreate
             
             # Wait for service to start
             echo "⏳ Waiting for service to start..."
@@ -61,7 +61,7 @@ jobs:
               echo "✅ Health check passed!"
             else
               echo "⚠️ Health check failed, but service might still be starting..."
-              docker-compose -f docker-compose.prod.yml logs --tail=10 whisper-api
+              docker compose -f docker-compose.prod.yml logs --tail=10 whisper-api
             fi
             
             # Cleanup old Docker images

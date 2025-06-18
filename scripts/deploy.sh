@@ -58,8 +58,8 @@ mkdir -p logs
 
 # Backup текущего состояния
 log "📦 Creating backup of current state..."
-if docker-compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
-    docker-compose -f "$COMPOSE_FILE" logs --tail=100 > "logs/backup-$(date +%Y%m%d_%H%M%S).log" 2>/dev/null || true
+if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
+    docker compose -f "$COMPOSE_FILE" logs --tail=100 > "logs/backup-$(date +%Y%m%d_%H%M%S).log" 2>/dev/null || true
     success "Backup created successfully"
 else
     warning "No running containers found, skipping backup"
@@ -74,17 +74,17 @@ success "Code updated successfully"
 
 # Обновление Docker образов
 log "🐳 Pulling latest Docker images..."
-docker-compose -f "$COMPOSE_FILE" pull
+docker compose -f "$COMPOSE_FILE" pull
 success "Docker images updated"
 
 # Остановка старых контейнеров (graceful shutdown)
 log "⏸️ Stopping old containers..."
-docker-compose -f "$COMPOSE_FILE" down --remove-orphans
+docker compose -f "$COMPOSE_FILE" down --remove-orphans
 success "Old containers stopped"
 
 # Запуск новых контейнеров
 log "▶️ Starting new containers..."
-docker-compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d
 success "New containers started"
 
 # Ожидание готовности сервисов
@@ -93,12 +93,12 @@ sleep 15
 
 # Проверка здоровья сервисов
 log "🔍 Checking service health..."
-if docker-compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
+if docker compose -f "$COMPOSE_FILE" ps | grep -q "Up"; then
     success "Services are running"
-    docker-compose -f "$COMPOSE_FILE" ps
+    docker compose -f "$COMPOSE_FILE" ps
 else
     error "Some services failed to start!"
-    docker-compose -f "$COMPOSE_FILE" logs --tail=50
+    docker compose -f "$COMPOSE_FILE" logs --tail=50
     exit 1
 fi
 

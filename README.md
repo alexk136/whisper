@@ -68,7 +68,7 @@ cp .env.sample .env
 # Отредактировать .env файл, добавить OPENAI_API_KEY
 
 # Запустить с Docker Compose
-docker-compose up -d
+docker compose up -d
 # или
 make dev
 ```

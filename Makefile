@@ -14,31 +14,31 @@ help: ## Show this help message
 
 # Development targets
 dev: ## Start development environment
-	docker-compose up -d
+	docker compose up -d
 	@echo "🚀 Development environment started"
 	@echo "API available at: http://localhost:8000"
 	@echo "View logs with: make logs"
 
 build: ## Build Docker images
-	docker-compose build
+	docker compose build
 
 up: ## Start services
-	docker-compose up -d
+	docker compose up -d
 
 down: ## Stop all services
-	docker-compose down
+	docker compose down
 
 stop: ## Stop services without removing containers
-	docker-compose stop
+	docker compose stop
 
 restart: ## Restart services
-	docker-compose restart
+	docker compose restart
 
 logs: ## Show service logs
-	docker-compose logs -f --tail=100
+	docker compose logs -f --tail=100
 
 status: ## Show service status
-	docker-compose ps
+	docker compose ps
 
 health: ## Check service health
 	@echo "🏥 Checking service health..."
@@ -47,20 +47,20 @@ health: ## Check service health
 
 # Production targets
 prod: ## Start production environment
-	docker-compose -f docker-compose.prod.yml up -d
+	docker compose -f docker-compose.prod.yml up -d
 	@echo "🚀 Production environment started"
 
 prod-build: ## Build production images
-	docker-compose -f docker-compose.prod.yml build
+	docker compose -f docker-compose.prod.yml build
 
 prod-down: ## Stop production environment
-	docker-compose -f docker-compose.prod.yml down
+	docker compose -f docker-compose.prod.yml down
 
 prod-logs: ## Show production logs
-	docker-compose -f docker-compose.prod.yml logs -f --tail=100
+	docker compose -f docker-compose.prod.yml logs -f --tail=100
 
 prod-status: ## Show production service status
-	docker-compose -f docker-compose.prod.yml ps
+	docker compose -f docker-compose.prod.yml ps
 
 # Testing targets
 test: ## Run all tests
@@ -119,13 +119,13 @@ deploy-staging: ## Deploy to staging
 # Cleanup targets
 clean: ## Clean up containers and images
 	@echo "🧹 Cleaning up..."
-	docker-compose down -v --remove-orphans
+	docker compose down -v --remove-orphans
 	docker system prune -f
 	@echo "✅ Cleanup completed"
 
 clean-all: ## Clean everything including volumes
 	@echo "🧹 Deep cleaning..."
-	docker-compose down -v --remove-orphans
+	docker compose down -v --remove-orphans
 	docker system prune -af --volumes
 	@echo "✅ Deep cleanup completed"
 
@@ -139,11 +139,11 @@ backup: ## Create backup
 
 # Monitoring targets
 monitor: ## Start monitoring stack
-	docker-compose --profile monitoring up -d
+	docker compose --profile monitoring up -d
 	@echo "📊 Monitoring started at http://localhost:9100"
 
 monitor-down: ## Stop monitoring
-	docker-compose --profile monitoring down
+	docker compose --profile monitoring down
 
 # Database targets (if using database)
 db-migrate: ## Run database migrations
@@ -194,7 +194,7 @@ info: ## Show system information
 	@echo "📋 System Information"
 	@echo "===================="
 	@echo "Docker version: $$(docker --version)"
-	@echo "Docker Compose version: $$(docker-compose --version)"
+	@echo "Docker Compose version: $$(docker compose version)"
 	@echo "Python version: $$(python --version)"
 	@echo "Current branch: $$(git symbolic-ref --short HEAD)"
 	@echo "Last commit: $$(git log -1 --oneline)"
