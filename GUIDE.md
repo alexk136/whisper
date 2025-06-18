@@ -131,12 +131,12 @@ docker-compose up -d
 
 ### Сборка образа
 ```bash
-docker build -t whisper-voice-auth .
+docker build -t whisper .
 ```
 
 ### Запуск контейнера
 ```bash
-docker run -p 8000:8000 -v $(pwd)/storage:/app/storage whisper-voice-auth
+docker run -p 8000:8000 -v $(pwd)/storage:/app/storage whisper
 ```
 
 ## Устранение неполадок
