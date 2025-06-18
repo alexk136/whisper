@@ -5,8 +5,28 @@ on:
     branches: [ main ]
 
 jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug SSH connection manually
+        run: |
+          echo "$SSH_KEY" > /tmp/id_rsa
+          chmod 600 /tmp/id_rsa
+
+          echo "👉 Проверка доступности порта..."
+          nc -zv $SSH_HOST $SSH_PORT || echo "❌ Не удалось подключиться к $SSH_HOST:$SSH_PORT"
+
+          echo "👉 Проверка SSH-соединения..."
+          ssh -i /tmp/id_rsa -p $SSH_PORT -o StrictHostKeyChecking=no -v $SSH_USER@$SSH_HOST 'echo ✅ Успешное подключение'
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT || 22 }}
+
   deploy:
     runs-on: ubuntu-latest
+    needs: debug
     steps:
       - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -53,20 +73,27 @@ jobs:
 
   notify:
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: [debug, deploy]
     if: always()
     steps:
       - name: Notify deployment result
         run: |
-          if [ "${{ needs.deploy.result }}" == "success" ]; then
+          echo "📊 Pipeline Summary:"
+          echo "  - Debug job: ${{ needs.debug.result }}"
+          echo "  - Deploy job: ${{ needs.deploy.result }}"
+          echo "  - Commit: ${{ github.sha }}"
+          echo "  - Branch: ${{ github.ref_name }}"
+          echo "  - Time: $(date)"
+          
+          if [ "${{ needs.debug.result }}" == "success" ] && [ "${{ needs.deploy.result }}" == "success" ]; then
             echo "✅ Whisper Voice Auth Service deployed successfully!"
-            echo "📊 Deployment Summary:"
-            echo "  - Status: ${{ needs.deploy.result }}"
-            echo "  - Commit: ${{ github.sha }}"
-            echo "  - Branch: ${{ github.ref_name }}"
-            echo "  - Time: $(date)"
           else
-            echo "❌ Deployment failed!"
-            echo "🔍 Check the deployment logs for details"
+            echo "❌ Pipeline failed!"
+            if [ "${{ needs.debug.result }}" != "success" ]; then
+              echo "🔍 Debug job failed - check SSH connection"
+            fi
+            if [ "${{ needs.deploy.result }}" != "success" ]; then
+              echo "🔍 Deploy job failed - check deployment logs"
+            fi
             exit 1
           fi
